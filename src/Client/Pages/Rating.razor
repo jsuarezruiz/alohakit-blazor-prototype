@@ -1,0 +1,98 @@
+﻿@page "/rating"
+
+@using SkiaSharp
+@using SkiaSharp.Views.Blazor
+@using Microsoft.Maui.Graphics.Skia
+@using Microsoft.Maui.Graphics
+
+<PageTitle>Rating</PageTitle>
+
+<h1>Rating</h1>
+
+<p>Rating is a control that allows users to rate by selecting number of items from a predefined number of items.</p>
+
+<div 
+    id="drawing_canvas_container" 
+    style="background-color:white;flex:1">
+    <SKCanvasView 
+        id="drawing_canvas" 
+        @ref="_skiaCanvas" 
+        OnPaintSurface="@OnPaintSurface" 
+        style="position:absolute;" />
+</div>
+
+@code 
+{
+    SKCanvasView _skiaCanvas = null!;
+    SkiaCanvas _mauiGraphicsCanvas = new SkiaCanvas();
+
+    public int ItemsCount { get; set; } = 5;
+    public int Value { get; set; } = 3;
+    public Paint BackgroundPaint { get; set; } = null;
+    public Color SelectedFillColor { get; set; } = Colors.Yellow;
+    public Color UnSelectedFillColor { get; set; } = Colors.Gray;
+    public Color SelectedStrokeColor { get; set; } = Colors.Yellow;
+    public Color UnSelectedStrokeColor { get; set; } = Colors.DarkGray;
+    public double SelectedStrokeWidth { get; set; } = 2;
+    public double UnSelectedStrokeWidth { get; set; } = 1;
+
+    void OnPaintSurface(SKPaintSurfaceEventArgs e)
+    {
+        RectF rect = new RectF(e.Info.Rect.Left, e.Info.Rect.Top, e.Info.Rect.Width, e.Info.Rect.Height);
+
+        // Get the Skia canvas and clear it
+        var canvas = e.Surface.Canvas;
+        canvas.Clear(SKColors.Transparent);
+
+        // Let the Maui.Graphics canvas know which underlying SkCanvas to draw to.
+        _mauiGraphicsCanvas.Canvas = canvas;
+
+        _mauiGraphicsCanvas.Antialias = true;
+
+        DrawBackground(_mauiGraphicsCanvas, rect);
+
+        for (int i = 0; i < ItemsCount; i++)
+        {
+            DrawRatingItem(_mauiGraphicsCanvas, rect, i);
+        }
+    }
+
+    public virtual void DrawBackground(ICanvas canvas, RectF dirtyRect)
+    {
+        canvas.SaveState();
+
+        if (BackgroundPaint != null)
+        {
+            canvas.SetFillPaint(BackgroundPaint, dirtyRect);
+
+            canvas.FillRectangle(dirtyRect);
+        }
+
+        canvas.RestoreState();
+    }
+
+    public virtual void DrawRatingItem(ICanvas canvas, RectF dirtyRect, int index)
+    {
+        canvas.SaveState();
+
+        canvas.StrokeColor = (index >= Value) ? UnSelectedStrokeColor : SelectedStrokeColor;
+        canvas.StrokeSize = (index >= Value) ? (float)UnSelectedStrokeWidth : (float)SelectedStrokeWidth;
+        canvas.FillColor = (index >= Value) ? UnSelectedFillColor : SelectedFillColor;
+
+        float scale = 0.85f;
+        float itemSize = 36.0f;
+
+        canvas.Scale(scale, scale);
+        canvas.Translate(index * itemSize, 0);
+
+        string star = "M16.001007,0L20.944,10.533997 32,12.223022 23.998993,20.421997 25.889008,32 16.001007,26.533997 6.1109924,32 8,20.421997 0,12.223022 11.057007,10.533997z";
+
+        var vBuilder = new PathBuilder();
+        var path = vBuilder.BuildPath(star);
+
+        canvas.DrawPath(path);
+        canvas.FillPath(path);
+
+        canvas.RestoreState();
+    }
+}
