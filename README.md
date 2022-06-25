@@ -2,6 +2,8 @@
 
 Prototype and test to bring drawn controls from .NET MAUI to Blazor WebAssembly.
 
+_(Work in progress)_
+
 ![AlohaKit](images/alohakit-blazor-prototype.gif)
 
 _NOTE: [AlohaKit](https://github.com/jsuarezruiz/AlohaKit) is a set of .NET MAUI drawn controls._
